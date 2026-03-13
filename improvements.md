@@ -10,8 +10,8 @@
 2. **Improve feature engineering**
     - Encode betting odds into numeric features. ✅
     - Add streak/momentum features (e.g., unbeaten streak, consecutive wins/losses). ✅
-    - Add player-level stats for key players (goals, assists, xG contribution). [ cannot find free option]
-    - Maintain existing rolling averages but expand window options (5–10 games). [the 10-game window is adding noise, not signal.]
+    - Add player-level stats for key players (goals, assists, xG contribution). [ cannot find free option] [X]
+    - Maintain existing rolling averages but expand window options (5–10 games). [the 10-game window is adding noise, not signal.] [X]
 
 3. **Clean and store data**
     - Move data to a proper database (`PostgreSQL` or `SQLite`) instead of CSVs.
