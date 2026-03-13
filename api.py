@@ -1,3 +1,4 @@
+import requests
 import pandas as pd
 import time
 
@@ -79,20 +80,84 @@ def standardise(df):
     return df[["Date", "Season", "Home", "Away", "HomeGoals", "AwayGoals",
                "Result", "OddsH", "OddsD", "OddsA", "Venue", "Referee", "Status"]]
 
-
+def get_upcoming():
+    import os
+    token = os.getenv("FOOTBALL_DATA_KEY")
+    
+    print("  Fetching upcoming fixtures from football-data.org ...")
+    url     = "https://api.football-data.org/v4/competitions/PL/matches"
+    headers = {"X-Auth-Token": token}
+    params  = {"status": "SCHEDULED"}
+    
+    response = requests.get(url, headers=headers, params=params)
+    data     = response.json()
+    
+    # Team name cleanup (they use full names like "Arsenal FC")
+    name_map = {
+        "Arsenal FC":                    "Arsenal",
+        "Aston Villa FC":                "Aston Villa",
+        "AFC Bournemouth":               "Bournemouth",
+        "Brentford FC":                  "Brentford",
+        "Brighton & Hove Albion FC":     "Brighton",
+        "Burnley FC":                    "Burnley",
+        "Chelsea FC":                    "Chelsea",
+        "Crystal Palace FC":             "Crystal Palace",
+        "Everton FC":                    "Everton",
+        "Fulham FC":                     "Fulham",
+        "Leeds United FC":               "Leeds United",
+        "Liverpool FC":                  "Liverpool",
+        "Manchester City FC":            "Manchester City",
+        "Manchester United FC":          "Manchester United",
+        "Newcastle United FC":           "Newcastle",
+        "Nottingham Forest FC":          "Nottingham Forest",
+        "Sunderland AFC":                "Sunderland",
+        "Tottenham Hotspur FC":          "Tottenham",
+        "West Ham United FC":            "West Ham",
+        "Wolverhampton Wanderers FC":    "Wolverhampton",
+    }
+    
+    rows = []
+    for match in data.get("matches", []):
+        home = name_map.get(match["homeTeam"]["name"], match["homeTeam"]["name"])
+        away = name_map.get(match["awayTeam"]["name"], match["awayTeam"]["name"])
+        rows.append({
+            "Date":      match["utcDate"][:10],
+            "Home":      home,
+            "Away":      away,
+            "HomeGoals": None,
+            "AwayGoals": None,
+            "Result":    None,
+            "OddsH":     None,
+            "OddsD":     None,
+            "OddsA":     None,
+            "Season":    "2025/2026",
+            "Status":    "NS",
+            "Venue":     None,
+            "Referee":   None,
+        })
+    
+    if not rows:
+        print("  → No upcoming fixtures found")
+        return pd.DataFrame()
+    
+    print(f"  → {len(rows)} upcoming fixtures found")
+    return pd.DataFrame(rows)
 # ─────────────────────────────────────────
 # 3. RUN
 # ─────────────────────────────────────────
+print("Fetching all historical data from football-data.co.uk ...")
+historical = standardise(get_all_seasons())
+print(f"  → {len(historical)} finished matches")
 
-print("Fetching all data from football-data.co.uk ...")
-combined = standardise(get_all_seasons())
+print("\nFetching upcoming fixtures from football-data.org ...")
+upcoming = standardise(get_upcoming())
+print(f"  → {len(upcoming)} upcoming fixtures")
+
+combined = pd.concat([historical, upcoming], ignore_index=True)
 combined = combined.drop_duplicates(subset=["Date", "Home", "Away"])
 combined = combined.sort_values("Date").reset_index(drop=True)
 
 combined.to_csv("matches_all.csv", index=False)
 print(f"\nTotal: {len(combined)} rows saved to matches_all.csv ✅")
-print("\nSeasons:", combined["Season"].value_counts())
-print(f"\nFinished matches: {len(combined[combined['Status']=='FT'])}")
-print(f"Upcoming fixtures: {len(combined[combined['Status']=='NS'])}")
-print("\nUpcoming fixtures:")
-print(combined[combined["Status"] == "NS"][["Date", "Home", "Away", "OddsH", "OddsD", "OddsA"]].to_string(index=False))
+print(f"\nFinished: {len(combined[combined['Status']=='FT'])}")
+print(f"Upcoming: {len(combined[combined['Status']=='NS'])}")

@@ -1,8 +1,17 @@
-import pandas as pd
+import requests
+import os
 
-url = "https://www.football-data.co.uk/mmz4281/2526/E0.csv"
-df = pd.read_csv(url)
-print(f"Total rows: {len(df)}")
-print(f"FTHG null count: {df['FTHG'].isna().sum()}")
-print(f"FTHG unique values (last 10): {df['FTHG'].tail(20).tolist()}")
-print(df[['Date','HomeTeam','AwayTeam','FTHG','FTAG']].tail(10))
+token = os.getenv("FOOTBALL_DATA_KEY")
+
+url = "https://api.football-data.org/v4/competitions/PL/matches"
+headers = {"X-Auth-Token": token}
+params = {"status": "SCHEDULED"}
+
+response = requests.get(url, headers=headers, params=params)
+data = response.json()
+
+for match in data["matches"]:
+    date = match["utcDate"][:10]
+    home = match["homeTeam"]["name"]
+    away = match["awayTeam"]["name"]
+    print(f"{date}  {home} vs {away}")

@@ -1,87 +1,90 @@
-### **Phase 1 – Data & Features (1–2 weeks)**
+# Premier League Predictor — Project Roadmap
+### MoSCoW Prioritisation
 
-**Goal:** Expand and professionalise your data pipeline.
-
-1. **Add real-time & richer data**
-    - Integrate a football API (e.g., API-Football) for upcoming matches, line-ups, and injuries. ✅
-    - Pull historical odds from bookmakers as features – often highly predictive. ✅
-    - Optional: weather, referee, and stadium factors.
-
-2. **Improve feature engineering**
-    - Encode betting odds into numeric features. ✅
-    - Add streak/momentum features (e.g., unbeaten streak, consecutive wins/losses). ✅
-    - Add player-level stats for key players (goals, assists, xG contribution). [ cannot find free option] [X]
-    - Maintain existing rolling averages but expand window options (5–10 games). [the 10-game window is adding noise, not signal.] [X]
-
-3. **Clean and store data**
-    - Move data to a proper database (`PostgreSQL` or `SQLite`) instead of CSVs.
-    - Create scripts to automatically update features daily or weekly.
+**Priority Key:**  
+🔴 Must Have | 🟠 Should Have | 🟡 Could Have | ⚪ Won't Have (now)
 
 ---
 
+## Data & Features
 
-### **Phase 2 – Modelling & Evaluation (2–3 weeks)**
-
-**Goal:** Improve predictive accuracy and probability calibration.
-
-1. **Model upgrades**
-    - Introduce **Gradient Boosting** models: XGBoost, LightGBM, CatBoost.
-    - Keep Random Forest as a benchmark.
-    - Experiment with ensemble predictions (weighted combination of multiple models).
-2. **Probability calibration**
-    - Use Platt scaling or isotonic regression to ensure predicted probabilities reflect reality.
-3. **Evaluation enhancements**
-    - Use Brier score and log loss for probability accuracy.
-    - Simulate betting ROI on historical odds to see real-world performance.
-
----
-
-### **Phase 3 – API & Deployment (1–2 weeks)**
-
-**Goal:** Make predictions accessible and professional.
-
-1. **Create a backend**
-    - Use `FastAPI` to serve your models.
-    - Endpoints:
-        - `/predict-match` → Win/Draw/Loss probabilities
-        - `/latest-matches` → latest stats and odds
-2. **Automate predictions**
-    - Daily script to fetch upcoming fixtures and update predictions.
-    - Containerise with Docker for portability.
-3. **Optional cloud deployment**
-    - Deploy API on AWS, GCP, or Heroku for public access.
+| Priority | Task | Status |
+|----------|------|--------|
+| 🔴 Must | Pull historical match data (football-data.co.uk) | ✅ Done |
+| 🔴 Must | Add Bet365 odds as model features | ✅ Done |
+| 🔴 Must | Encode implied probabilities from odds | ✅ Done |
+| 🔴 Must | Rolling averages — 5-game window (pts, GF, GA) | ✅ Done |
+| 🔴 Must | Win/loss/unbeaten streak features | ✅ Done |
+| 🔴 Must | Upcoming fixtures (football-data.org free API) | ✅ Done |
+| 🟠 Should | SQLite database instead of CSV | ⏳ Todo |
+| 🟠 Should | Auto-refresh data via cron job | ⏳ Todo |
+| 🟠 Should | Rolling averages — 10-game window | 🚫 Skipped (adds noise) |
+| 🟡 Could | Player-level stats (goals, assists, xG) | 🚫 Skipped (no free source) |
+| 🟡 Could | Referee / weather / stadium factors | ⏳ Later |
 
 ---
 
-### **Phase 4 – Dashboard & UX (1–2 weeks)**
+## Modelling & Evaluation
 
-**Goal:** Make your project user-friendly and interactive.
-
-1. **Streamlit / Dash dashboard**
-    - Select teams, venue, and kickoff time → show predicted probabilities.
-    - Visualise key features influencing the prediction (SHAP or feature importance).
-    - Include historical accuracy and ROI simulation charts.
-2. **Interactivity & insights**
-    - Highlight trends: team form, streaks, xG trends.
-    - Allow toggling between models to compare predictions.
-
----
-
-### **Phase 5 – Automation & Monitoring (ongoing)**
-
-**Goal:** Keep the system professional and maintainable.
-
-1. Schedule ETL & feature updates (Airflow or cron).
-2. Retrain models periodically (weekly/monthly).
-3. Add logging & monitoring (model drift, API errors).
-4. Versioning: models, features, and data snapshots (MLflow or DVC).
+| Priority | Task | Status |
+|----------|------|--------|
+| 🔴 Must | XGBoost model (replace/benchmark Random Forest) | ⏳ Next |
+| 🔴 Must | SHAP feature importance in app | ⏳ Next |
+| 🟠 Should | LightGBM / CatBoost models | ⏳ Todo |
+| 🟠 Should | Probability calibration (Platt scaling) | ⏳ Todo |
+| 🟠 Should | Brier score + log loss evaluation | ⏳ Todo |
+| 🟠 Should | Ensemble predictions (weighted combo) | ⏳ Todo |
+| 🟡 Could | Betting ROI simulation on historical odds | ⏳ Later |
+| 🟡 Could | Poisson distribution for score prediction | ⏳ Later |
 
 ---
 
-### **Optional Advanced Enhancements**
+## API & Deployment
 
-- Live match predictions for in-play betting simulations.
-- Player-level predictive modelling to capture individual influence.
-- Multi-season trend analysis (long-term predictive insights).
-- Cloud-hosted dashboard with user login for custom predictions.
-- poisson distribution 
+| Priority | Task | Status |
+|----------|------|--------|
+| 🟠 Should | FastAPI backend (/predict-match endpoint) | ⏳ Todo |
+| 🟠 Should | Daily script to auto-update predictions | ⏳ Todo |
+| 🟡 Could | Docker containerisation | ⏳ Later |
+| 🟡 Could | Cloud deployment (AWS / GCP / Heroku) | ⏳ Later |
+| ⚪ Won't | Live in-play match predictions | ⏳ Later |
+
+---
+
+## Dashboard & UX
+
+| Priority | Task | Status |
+|----------|------|--------|
+| 🔴 Must | Streamlit app — team selector + predictions | ✅ Done |
+| 🔴 Must | Tabs (Predict / Fixtures / Stats) | ✅ Done |
+| 🔴 Must | Prediction reasoning / explainability | ✅ Done |
+| 🔴 Must | Head-to-head + form dots + goals chart | ✅ Done |
+| 🟠 Should | SHAP visualisation in app | ⏳ Next |
+| 🟠 Should | Toggle between models (RF vs XGBoost) | ⏳ Todo |
+| 🟠 Should | Historical accuracy chart | ⏳ Todo |
+| 🟡 Could | xG trend charts per team | ⏳ Later |
+| 🟡 Could | User login for custom predictions | ⏳ Later |
+
+---
+
+## Automation & Monitoring
+
+| Priority | Task | Status |
+|----------|------|--------|
+| 🟠 Should | Cron job for weekly data + model refresh | ⏳ Todo |
+| 🟡 Could | MLflow / DVC model versioning | ⏳ Later |
+| 🟡 Could | Model drift monitoring + alerts | ⏳ Later |
+| 🟡 Could | Airflow ETL pipeline | ⏳ Later |
+| ⚪ Won't | Player-level predictive modelling | ⏳ Later |
+| ⚪ Won't | Multi-season trend analysis | ⏳ Later |
+
+---
+
+## Next Steps (Priority Order)
+
+1. **XGBoost model** — highest accuracy gain, low effort  
+2. **SHAP feature importance in app** — makes predictions explainable  
+3. **SQLite database + cron auto-update** — makes it production-ready  
+4. **Probability calibration** — improves trust in predictions  
+5. **Toggle between models in app** — UX enhancement  
+6. **FastAPI backend** — needed for scaling beyond Streamlit
