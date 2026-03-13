@@ -315,3 +315,48 @@ if predict_btn:
             <div class='stat-number' style='color:#ef4444'>{prob_a:.0%}</div>
             <div class='stat-label'>✈️ {away_team} Win</div>
         </div>""", unsafe_allow_html=True)
+        
+        # Reasoning
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<div class='section-header'>WHY THIS PREDICTION?</div>", unsafe_allow_html=True)
+
+    reasons = []
+
+    # Form comparison
+    away_form_df = finished[finished["Away"] == away_team].tail(5)
+    away_pts5 = away_form_df["Points"].mean() if not away_form_df.empty else 1.0
+
+    if pts5 > away_pts5:
+        reasons.append(f"✅ **{home_team}** are in better recent form ({pts5:.1f} pts/game vs {away_pts5:.1f})")
+    elif away_pts5 > pts5:
+        reasons.append(f"⚠️ **{away_team}** are in better recent form ({away_pts5:.1f} pts/game vs {pts5:.1f})")
+    else:
+        reasons.append(f"➖ Both teams in similar form ({pts5:.1f} pts/game)")
+
+    # Bookmaker odds
+    if prob_h > prob_a:
+        reasons.append(f"✅ Bookmakers favour **{home_team}** to win ({prob_h:.0%} implied probability)")
+    elif prob_a > prob_h:
+        reasons.append(f"⚠️ Bookmakers favour **{away_team}** to win ({prob_a:.0%} implied probability)")
+
+    # Goals form
+    if gf5 > a_g:
+        reasons.append(f"✅ **{home_team}** scoring more ({gf5:.1f} goals/game vs {a_g:.1f})")
+    elif a_g > gf5:
+        reasons.append(f"⚠️ **{away_team}** scoring more ({a_g:.1f} goals/game vs {gf5:.1f})")
+
+    # Head to head
+    if not h2h.empty:
+        if h2h_hw > h2h_aw:
+            reasons.append(f"✅ **{home_team}** lead the head to head ({h2h_hw}W {h2h_d}D {h2h_aw}L)")
+        elif h2h_aw > h2h_hw:
+            reasons.append(f"⚠️ **{away_team}** lead the head to head ({h2h_aw}W {h2h_d}D {h2h_hw}L)")
+        else:
+            reasons.append(f"➖ Head to head is evenly matched ({h2h_hw}W {h2h_d}D {h2h_aw}L)")
+
+    # Home advantage
+    home_win_rate = len(finished[finished["Result"] == "H"]) / len(finished)
+    reasons.append(f"✅ Home advantage — {home_win_rate:.0%} of PL games are won by the home team")
+
+    for r in reasons:
+        st.markdown(r)
