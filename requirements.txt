@@ -1,8 +1,8 @@
 pandas
 numpy
 requests
-beautifulsoup4
 matplotlib
 seaborn
 scikit-learn
-tensorflow
+joblib
+streamlit
