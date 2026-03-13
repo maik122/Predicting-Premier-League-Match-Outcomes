@@ -1,80 +1,112 @@
-# Case Study: Predicting Premier League Match Outcomes 
+# Case Study: Predicting Premier League Match Outcomes
 
-## 1. Why This Project?  
-Football is unpredictable — but can data tell us when a team is likely to win?  
+## 1. Why This Project?
+Football is unpredictable — but can data tell us when a team is likely to win?
 
-I set out to explore whether **machine learning can predict Premier League match results** using 5 seasons of match data (2018–2022).  
+This project explores whether **machine learning can predict Premier League match results** using **match data from 2021 to the present**, including upcoming fixtures.
 
-The purpose wasn’t to “beat the bookies,” but to demonstrate an **end-to-end ML workflow**:  
-- Collect messy real-world data  
-- Clean and engineer meaningful features  
-- Train and evaluate machine learning models  
-- Communicate results clearly with both visuals and an interactive app  
+The aim is to demonstrate a **full ML workflow**:
+- Collect messy, real-world football data
+- Clean and engineer meaningful features
+- Train and evaluate machine learning models
+- Communicate results clearly through visuals and an interactive app
 
 ---
 
-## 2. Approach  
-### Data Collection  
-- Scraped match results and shooting statistics from [FBRef](https://fbref.com/)  
-- Dataset: ~3,700 matches (2018–2022)  
-- Features: team, opponent, venue, number of shots, kickoff time, etc.  
+## 2. Data Collection
 
-### Feature Engineering  
-Converted categorical features into numerical codes and created additional features:  
+- **Historical results & odds:** football-data.co.uk (2021–present)  
+- **Upcoming fixtures:** football-data.co.uk
+- Combined dataset includes **finished matches and scheduled fixtures**, cleaned and standardized  
+- Team names harmonized (e.g., "Man United" → "Manchester United")  
+- Features include: team, opponent, venue, rolling averages, streaks, kickoff time, Bet365 odds, and season
+
+Example snippet to combine and save data:
+combined = pd.concat([historical, upcoming], ignore_index=True)
+combined = combined.drop_duplicates(subset=["Date", "Home", "Away"])
+combined.to_csv("matches_all.csv", index=False)
+
+---
+
+## 3. Feature Engineering
+
+- **Team_Code** – numeric team identifier  
+- **Opponent_Code** – proxy for team strength  
 - **Venue_Code** – home/away  
-- **Opponent_Code** – team strength proxy  
-- **Day_Code** – day of week  
-- **Hour** – kickoff time   
-
-### Modelling  
-- Baseline: “always predict home win” (~50% accuracy)  
-- Model: **Random Forest Classifier**  **SVM** **DNN**
-- Trained on engineered features and evaluated with accuracy and confusion matrix  
-
+- **Day_Code / Hour** – kickoff day and time  
+- **Rolling averages** – points, goals for/against (5-game window)  
+- **Streaks** – win, loss, unbeaten  
+- **Betting probabilities** – implied from odds (ProbH, ProbD, ProbA)  
+- Missing scores marked as **upcoming** for scheduled matches
 
 ---
 
-## 3. Results  
-### Classification report comparison: 
-| model type | precision | recall | f1-score| support|
-| :-: | :-: | :-: | :-:| :-: |
-|Random forest classifier| 0.60 | 0.62 | 0.60 | 1052|
-|Random forest classifier modified| 0.64 | 0.65 | 0.62 | 1047|
-|SVM model with rbf kernel | 0.64 | 0.64 | 0.52 | 1047|
-|SVM model with poly kernel |0.64|0.64|0.57|1047|
-|deep neural network |0.62|0.63|0.61|1047|
-|deep neural network with extra layers|0.62|0.61|0.48|1047|
+## 4. Modelling
 
-### Accuracy comparison: 
-- Random forest classifier:61.6%
-- Random forest classifier modified:64.8%
-- SVM model with rbf kernel :63.7%
-- SVM model with poly kernel : 63.8%
-- deep neural network :63.6%
-- deep neural network with extra layers:61.3%
+**Current baseline:**  
+- **Random Forest Classifier** trained on engineered features  
+- Evaluated with **accuracy**, **confusion matrix**, and **classification metrics**
 
-- Key predictors: **venue (home/away)** and **opponent strength**  
-
-
-
-Insight: Machine learning captures some signal, but football remains highly unpredictable.  
+**Future roadmap (MoSCoW prioritised):**  
+- Upgrade to **XGBoost, LightGBM, CatBoost**  
+- Ensemble predictions  
+- Probability calibration (Platt scaling / isotonic regression)  
+- SHAP feature importance for interpretability
 
 ---
 
-## 4. Interactive Demo  
+## 5. Results
 
-I built a **Streamlit app** to explore predictions interactively:  
+**Random Forest Classifier**  
+- **Accuracy:** 0.6619  
+- **Key predictors:**  
+```
+["Team_Code", "Opponent_Code", "Venue_Code", "Hour", "Day_Code",
+"Points_form5", "GF_form5", "GA_form5",
+"ProbH", "ProbD", "ProbA",
+"WinStreak", "LossStreak", "UnbeatenStreak"]
+```
 
-- Select any two Premier League teams  
+**Insight:** Machine learning captures some predictive signal, but football remains highly unpredictable.
+
+---
+
+## 6. Interactive Demo
+
+A **Streamlit app** allows exploring predictions interactively:
+- Select two Premier League teams  
 - Choose venue and kickoff time  
-- See predicted probabilities for win/draw/loss  
- 
+- View predicted probabilities for Win / Draw / Loss  
 
-**Sample Prediction:**  
-![Streamlit Prediction](assets/prediction.png)  
-
-Currently runs **locally**. Deployment to Streamlit Cloud is planned so it can be tried online:  
-```bash
+Run locally:
+```
 pip install -r requirements.txt
 streamlit run app.py
 ```
+---
+
+## 7. Roadmap & Next Steps (MoSCoW Prioritisation)
+
+### Must-Have
+- Upgrade to **XGBoost model**  
+- Add **SHAP feature importance** in app  
+- SQLite database + automated cron updates  
+- Streamlit enhancements (tabs, prediction reasoning, charts)  
+
+### Should-Have
+- LightGBM / CatBoost models  
+- Probability calibration  
+- Ensemble predictions  
+- FastAPI backend for scalable predictions  
+
+### Could-Have
+- Player-level stats (goals, assists, xG)  
+- Referee / weather / stadium factors  
+- xG trend charts per team  
+- Cloud deployment (AWS/GCP/Heroku)  
+- User login for personalised predictions  
+
+### Won’t-Have (for now)
+- Live in-play predictions  
+- Multi-season long-term trend analysis  
+- Player-level predictive modelling

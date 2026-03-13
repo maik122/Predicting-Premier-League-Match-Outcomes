@@ -5,7 +5,6 @@ import time
 # ─────────────────────────────────────────
 # 1. ALL DATA (football-data.co.uk)
 #    Results + Bet365 odds + upcoming fixtures
-#    No API key needed!
 # ─────────────────────────────────────────
 
 def get_all_seasons():
